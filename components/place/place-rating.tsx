@@ -14,9 +14,9 @@ export function PlaceRating({ rating, totalReviews, priceLevel }: PlaceRatingPro
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex items-center gap-3">
       <div className="flex items-center gap-1">
-        <span className="text-xl font-medium text-gray-900">{rating}</span>
+        <span className="text-xl font-semibold text-foreground">{rating}</span>
         <div className="flex items-center gap-0.5 ml-1">
           {[...Array(fullStars)].map((_, i) => (
             <Star

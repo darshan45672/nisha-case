@@ -25,55 +25,43 @@ const sampleReviews = [
 
 export function PlaceReviews() {
   return (
-    <div>
-      <div className="px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Reviews</h3>
-          <Button variant="link" className="text-blue-600 text-sm p-0 h-auto">
-            See all
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {sampleReviews.map((review) => (
-            <div key={review.id} className="space-y-2">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-blue-600 text-white text-xs">
-                    {review.author.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">
-                    {review.author}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <div className="flex">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-3 w-3 fill-yellow-500 text-yellow-500"
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-500">{review.date}</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700 leading-relaxed ml-11">
-                {review.text}
+    <div className="space-y-4">
+      {sampleReviews.map((review) => (
+        <div key={review.id} className="space-y-2 pb-4 border-b last:border-0 last:pb-0">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                {review.author.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {review.author}
               </p>
-              <div className="flex items-center gap-4 ml-11">
-                <button className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900">
-                  <ThumbsUp className="h-3.5 w-3.5" />
-                  <span>{review.helpful}</span>
-                </button>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-3 w-3 fill-yellow-500 text-yellow-500"
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground">{review.date}</span>
               </div>
             </div>
-          ))}
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed ml-12">
+            {review.text}
+          </p>
+          <div className="flex items-center gap-4 ml-12">
+            <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <ThumbsUp className="h-3.5 w-3.5" />
+              <span>{review.helpful}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   )
 }

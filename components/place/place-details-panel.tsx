@@ -8,6 +8,8 @@ import {
   DrawerContent,
 } from "@/components/ui/drawer"
 import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlaceHeader } from "./place-header"
 import { PlaceRating } from "./place-rating"
 import { PlaceActions } from "./place-actions"
@@ -17,6 +19,7 @@ import { PlaceAddress } from "./place-address"
 import { PlaceReviews } from "./place-reviews"
 import { PlaceData } from "@/lib/place-data"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Clock, MapPin, Star, Image as ImageIcon } from "lucide-react"
 
 interface PlaceDetailsPanelProps {
   place: PlaceData
@@ -32,41 +35,117 @@ function PlaceContent({ place }: { place: PlaceData }) {
         category={place.category}
       />
       <ScrollArea className="flex-1">
-        <div className="pb-6">
-          <PlaceRating
-            rating={place.rating}
-            totalReviews={place.totalReviews}
-            priceLevel={place.priceLevel}
-          />
-          <Separator />
-          <PlaceActions />
-          <Separator />
-          <PhotoGallery photos={place.photos} />
-          <Separator />
-          <PlaceAddress
-            address={place.address}
-            neighborhood={place.neighborhood}
-            phone={place.phone}
-            website={place.website}
-          />
-          <Separator />
-          <PlaceTimings
-            isOpen={place.isOpen}
-            openingTime={place.openingTime}
-            timings={place.timings}
-          />
-          <Separator />
-          <PlaceReviews />
-          {place.description && (
-            <>
-              <Separator />
-              <div className="px-4 py-4">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {place.description}
-                </p>
-              </div>
-            </>
-          )}
+        <div className="pb-6 px-4">
+          {/* Rating & Actions Card */}
+          <Card className="border-0 shadow-none">
+            <CardContent className="pt-4 px-0 space-y-4">
+              <PlaceRating
+                rating={place.rating}
+                totalReviews={place.totalReviews}
+                priceLevel={place.priceLevel}
+              />
+              <PlaceActions />
+            </CardContent>
+          </Card>
+
+          <Separator className="my-4" />
+
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview" className="text-xs">
+                <MapPin className="h-3.5 w-3.5 mr-1" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="text-xs">
+                <ImageIcon className="h-3.5 w-3.5 mr-1" />
+                Photos
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="text-xs">
+                <Star className="h-3.5 w-3.5 mr-1" />
+                Reviews
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="mt-4 space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Location & Contact
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <PlaceAddress
+                    address={place.address}
+                    neighborhood={place.neighborhood}
+                    phone={place.phone}
+                    website={place.website}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Hours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PlaceTimings
+                    isOpen={place.isOpen}
+                    openingTime={place.openingTime}
+                    timings={place.timings}
+                  />
+                </CardContent>
+              </Card>
+
+              {place.description && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">About</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {place.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Photos Tab */}
+            <TabsContent value="photos" className="mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Photo Gallery</CardTitle>
+                  <CardDescription>
+                    {place.photos.length} photos available
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PhotoGallery photos={place.photos} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Reviews Tab */}
+            <TabsContent value="reviews" className="mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Customer Reviews</CardTitle>
+                  <CardDescription>
+                    {place.totalReviews.toLocaleString()} reviews
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PlaceReviews />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </ScrollArea>
     </div>
@@ -85,7 +164,7 @@ export function PlaceDetailsPanel({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="left"
-          className="w-full sm:max-w-[440px] p-0 flex flex-col"
+          className="w-full sm:max-w-[420px] md:max-w-[440px] p-0 flex flex-col"
         >
           <SheetTitle className="sr-only">{place.name}</SheetTitle>
           <PlaceContent place={place} />
@@ -96,8 +175,8 @@ export function PlaceDetailsPanel({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh] flex flex-col">
-        <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4 mt-4" />
+      <DrawerContent className="max-h-[92vh] flex flex-col">
+        <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-2 mt-3" />
         <PlaceContent place={place} />
       </DrawerContent>
     </Drawer>
