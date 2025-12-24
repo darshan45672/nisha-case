@@ -221,11 +221,13 @@ export default function Home() {
       x: touch.clientX - mapOffset.x,
       y: touch.clientY - mapOffset.y
     })
+    e.preventDefault()
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return
     
+    e.preventDefault()
     const touch = e.touches[0]
     const newOffset = {
       x: touch.clientX - dragStart.x,
@@ -240,21 +242,21 @@ export default function Home() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
+      <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df] touch-none">
       {/* Live Location Badge - Top Left */}
       {showDirections && (
-        <div className="absolute top-20 left-3 z-30">
-          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
-            <Navigation className="h-3 w-3 mr-1 animate-pulse" />
-            Navigating to {selectedPlace.name}
+        <div className="absolute top-16 md:top-20 left-3 z-30 max-w-[calc(100vw-6rem)]">
+          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg text-xs md:text-sm truncate">
+            <Navigation className="h-3 w-3 mr-1 animate-pulse flex-shrink-0" />
+            <span className="truncate">Navigating to {selectedPlace.name}</span>
           </Badge>
         </div>
       )}
       
       {/* Top Search Bar */}
-      <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0">
+      <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0 pointer-events-auto">
         <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-          <div className="flex w-full bg-white rounded-xl shadow-lg hover:shadow-2xl border-0 py-2.5 px-3">
+          <div className="flex w-full bg-white rounded-xl shadow-lg hover:shadow-2xl border-0 py-2.5 px-3 max-h-12">
             <Menu 
               className="h-5 w-5 mr-2 flex-shrink-0 text-gray-700 cursor-pointer" 
               onClick={() => setIsMenuOpen(true)}
@@ -341,18 +343,18 @@ export default function Home() {
       </Sheet>
 
       {/* Map Container */}
-      <div className="relative flex-1 w-full h-full overflow-hidden">
+      <div className="relative flex-1 w-full h-full overflow-hidden touch-none">
         {/* Enhanced Map with realistic design */}
         <div 
-          className="absolute inset-0 bg-[#e5e3df] transition-transform duration-300"
+          className="absolute inset-0 bg-[#e5e3df] transition-transform duration-300 select-none"
           style={{ 
             transform: `scale(${zoomLevel}) translate(${mapOffset.x}px, ${mapOffset.y}px)`,
             transformOrigin: 'center center',
-            minWidth: '100%',
-            minHeight: '100%',
+            width: '100%',
+            height: '100%',
             cursor: isDragging ? 'grabbing' : 'grab',
-            userSelect: 'none',
-            touchAction: 'none'
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none'
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -478,109 +480,125 @@ export default function Home() {
           </div>
 
           {/* All Location Markers */}
-          {locations.map((location) => (
-            <HoverCard key={location.id} openDelay={200}>
-              <HoverCardTrigger asChild>
-                <button
-                  onClick={() => handlePlaceSelect(location)}
-                  className={`absolute -translate-x-1/2 -translate-y-full transition-all ${
-                    selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
-                  }`}
-                  style={{
-                    top: `${location.coordinates.y}%`,
-                    left: `${location.coordinates.x}%`,
-                  }}
-                  aria-label={`Select ${location.name}`}
-                >
+          {locations.map((location) => {
+            const markerButton = (
+              <button
+                onClick={() => handlePlaceSelect(location)}
+                className={`absolute -translate-x-1/2 -translate-y-full transition-all touch-manipulation ${
+                  selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
+                }`}
+                style={{
+                  top: `${location.coordinates.y}%`,
+                  left: `${location.coordinates.x}%`,
+                }}
+                aria-label={`Select ${location.name}`}
+              >
+                <div className="relative">
                   <div className="relative">
-                    <div className={`relative ${selectedPlace.id === location.id ? 'animate-bounce' : ''}`}>
-                      <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
-                        selectedPlace.id === location.id ? 'bg-red-600' : 'bg-blue-600'
-                      }`} />
-                      <MapPin 
-                        className={`relative h-8 w-8 drop-shadow-2xl ${
-                          selectedPlace.id === location.id 
-                            ? 'text-red-600 fill-red-600' 
-                            : 'text-blue-600 fill-blue-600'
-                        }`}
-                        strokeWidth={1.5}
-                      />
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
-                    </div>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-black/30 rounded-full blur-sm" />
-                    
-                    {/* Location Label */}
-                    <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap px-2 py-0.5 rounded text-xs font-medium shadow-sm ${
-                      selectedPlace.id === location.id 
-                        ? 'bg-red-600 text-white' 
-                        : 'bg-white text-gray-700 border border-gray-200'
-                    }`}>
-                      {location.name}
-                    </div>
+                    <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
+                      selectedPlace.id === location.id ? 'bg-red-600' : 'bg-blue-600'
+                    }`} />
+                    <MapPin 
+                      className={`relative h-7 w-7 md:h-8 md:w-8 drop-shadow-2xl ${
+                        selectedPlace.id === location.id 
+                          ? 'text-red-600 fill-red-600' 
+                          : 'text-blue-600 fill-blue-600'
+                      }`}
+                      strokeWidth={1.5}
+                    />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
                   </div>
-                </button>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-80" side="top" align="center">
-                <div className="space-y-3">
-                  <div>
-                    <h4 className="font-semibold text-base mb-1">{location.name}</h4>
-                    <p className="text-sm text-muted-foreground">{location.category} · {location.neighborhood}</p>
-                  </div>
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-1 md:w-6 md:h-1.5 bg-black/30 rounded-full blur-sm" />
                   
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-sm">{location.rating}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">({location.totalReviews} reviews)</span>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <p className={location.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                      {location.isOpen ? "Open now" : "Closed"}
-                    </p>
-                    {location.timings && location.timings.length > 0 && (
-                      <p className="text-muted-foreground text-xs mt-1">{location.timings[0].hours}</p>
-                    )}
-                  </div>
-                  
-                  {location.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{location.description}</p>
-                  )}
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handlePlaceSelect(location)
-                      }}
-                    >
-                      View Details
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleGetDirections(location)
-                        handlePlaceSelect(location)
-                      }}
-                    >
-                      <Navigation className="h-4 w-4 mr-1" />
-                      Directions
-                    </Button>
+                  {/* Location Label */}
+                  <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap px-1.5 py-0.5 md:px-2 rounded text-[10px] md:text-xs font-medium shadow-sm ${
+                    selectedPlace.id === location.id 
+                      ? 'bg-red-600 text-white' 
+                      : 'bg-white text-gray-700 border border-gray-200'
+                  }`}>
+                    {location.name}
                   </div>
                 </div>
-              </HoverCardContent>
-            </HoverCard>
-          ))}
+              </button>
+            )
+
+            return (
+              <div key={location.id}>
+                {/* Desktop: With HoverCard */}
+                <div className="hidden md:block">
+                  <HoverCard openDelay={200}>
+                    <HoverCardTrigger asChild>
+                      {markerButton}
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80" side="top" align="center">
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="font-semibold text-base mb-1">{location.name}</h4>
+                          <p className="text-sm text-muted-foreground">{location.category} · {location.neighborhood}</p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <span className="font-medium text-sm">{location.rating}</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">({location.totalReviews} reviews)</span>
+                        </div>
+                        
+                        <div className="text-sm">
+                          <p className={location.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                            {location.isOpen ? "Open now" : "Closed"}
+                          </p>
+                          {location.timings && location.timings.length > 0 && (
+                            <p className="text-muted-foreground text-xs mt-1">{location.timings[0].hours}</p>
+                          )}
+                        </div>
+                        
+                        {location.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">{location.description}</p>
+                        )}
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handlePlaceSelect(location)
+                            }}
+                          >
+                            View Details
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleGetDirections(location)
+                              handlePlaceSelect(location)
+                            }}
+                          >
+                            <Navigation className="h-4 w-4 mr-1" />
+                            Directions
+                          </Button>
+                        </div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                </div>
+                
+                {/* Mobile: Without HoverCard */}
+                <div className="block md:hidden">
+                  {markerButton}
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Map Controls - Bottom Right */}
-        <div className="absolute bottom-20 md:bottom-6 right-3 md:right-6 flex flex-col gap-2 z-20">
+        <div className="absolute bottom-28 md:bottom-6 right-3 md:right-6 flex flex-col gap-2 z-20">
           {/* Layers Menu */}
           <DropdownMenu>
             <Tooltip>
@@ -589,9 +607,9 @@ export default function Home() {
                   <Button
                     variant="secondary"
                     size="icon"
-                    className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
+                    className="h-9 w-9 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
                   >
-                    <Layers className="h-5 w-5 text-gray-700" />
+                    <Layers className="h-4 w-4 md:h-5 md:w-5 text-gray-700" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -640,10 +658,10 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 md:h-11 md:w-11 rounded-none border-b hover:bg-gray-100"
+                  className="h-9 w-9 md:h-11 md:w-11 rounded-none border-b hover:bg-gray-100"
                   onClick={handleZoomIn}
                 >
-                  <span className="text-xl font-semibold text-gray-700">+</span>
+                  <span className="text-lg md:text-xl font-semibold text-gray-700">+</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
@@ -655,10 +673,10 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 md:h-11 md:w-11 rounded-none hover:bg-gray-100"
+                  className="h-9 w-9 md:h-11 md:w-11 rounded-none hover:bg-gray-100"
                   onClick={handleZoomOut}
                 >
-                  <span className="text-xl font-semibold text-gray-700">−</span>
+                  <span className="text-lg md:text-xl font-semibold text-gray-700">−</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
@@ -673,10 +691,10 @@ export default function Home() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
+                className="h-9 w-9 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
                 onClick={handleResetNorth}
               >
-                <Navigation2 className="h-5 w-5 text-blue-600" />
+                <Navigation2 className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="left">
@@ -686,10 +704,10 @@ export default function Home() {
         </div>
 
         {/* Place Info Card - Mobile Only */}
-        <div className="absolute bottom-3 left-3 right-3 md:hidden z-20">
+        <div className="absolute bottom-3 left-3 right-3 md:hidden z-20 pb-safe">
           <button
             onClick={() => setIsPanelOpen(true)}
-            className="w-full bg-white rounded-2xl shadow-2xl p-4 hover:shadow-3xl transition-all active:scale-[0.98]"
+            className="w-full bg-white rounded-2xl shadow-2xl p-4 hover:shadow-3xl transition-all active:scale-[0.98] backdrop-blur-sm"
           >
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0 text-left">

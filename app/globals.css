@@ -121,6 +121,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Prevent pull-to-refresh and overscroll on mobile */
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improve tap highlight for mobile */
+  button, a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  html, body {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 }
 
