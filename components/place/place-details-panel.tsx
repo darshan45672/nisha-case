@@ -174,11 +174,11 @@ function PlaceContent({
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Customer Reviews</CardTitle>
                 <CardDescription>
-                  {place.totalReviews.toLocaleString()} reviews
+                  Reviews for {place.name}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PlaceReviews />
+                <PlaceReviews placeId={place.id} />
               </CardContent>
             </Card>
           </TabsContent>

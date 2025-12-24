@@ -16,95 +16,54 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ReviewForm } from "./review-form"
 import { Review } from "@/lib/place-data"
+import {
+  getCurrentUser,
+  getReviewsForPlace,
+  saveReviewsForPlace,
+  getHelpfulReviews,
+  saveHelpfulReviews,
+  initializeDefaultReviews,
+} from "@/lib/review-storage"
 
-const REVIEWS_STORAGE_KEY = "place-reviews"
-const HELPFUL_STORAGE_KEY = "helpful-reviews"
-
-const defaultReviews: Review[] = [
-  {
-    id: "1",
-    author: "Sarah M.",
-    rating: 5,
-    date: "2 weeks ago",
-    text: "Amazing coffee and great atmosphere! The baristas are incredibly knowledgeable and the pour-over is exceptional.",
-    helpful: 12,
-  },
-  {
-    id: "2",
-    author: "Michael T.",
-    rating: 4,
-    date: "1 month ago",
-    text: "Quality coffee but can get quite busy. Recommend going during off-peak hours.",
-    helpful: 8,
-  },
-]
-
-// Helper functions for session storage
-const getStoredReviews = (): Review[] => {
-  if (typeof window === "undefined") return defaultReviews
-  
-  try {
-    const stored = sessionStorage.getItem(REVIEWS_STORAGE_KEY)
-    return stored ? JSON.parse(stored) : defaultReviews
-  } catch (error) {
-    console.error("Error loading reviews from session storage:", error)
-    return defaultReviews
-  }
+interface PlaceReviewsProps {
+  placeId: string
 }
 
-const getStoredHelpfulReviews = (): Set<string> => {
-  if (typeof window === "undefined") return new Set()
-  
-  try {
-    const stored = sessionStorage.getItem(HELPFUL_STORAGE_KEY)
-    return stored ? new Set(JSON.parse(stored)) : new Set()
-  } catch (error) {
-    console.error("Error loading helpful reviews from session storage:", error)
-    return new Set()
-  }
-}
-
-export function PlaceReviews() {
+export function PlaceReviews({ placeId }: PlaceReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null)
   const [helpfulReviews, setHelpfulReviews] = useState<Set<string>>(new Set())
+  const [currentUser, setCurrentUser] = useState<string>("")
   const [isLoaded, setIsLoaded] = useState(false)
 
   // Load data from session storage on mount
   useEffect(() => {
-    setReviews(getStoredReviews())
-    setHelpfulReviews(getStoredHelpfulReviews())
+    initializeDefaultReviews(placeId)
+    setReviews(getReviewsForPlace(placeId))
+    setHelpfulReviews(getHelpfulReviews())
+    setCurrentUser(getCurrentUser())
     setIsLoaded(true)
-  }, [])
+  }, [placeId])
 
   // Save reviews to session storage whenever they change
   useEffect(() => {
     if (!isLoaded) return
-    
-    try {
-      sessionStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews))
-    } catch (error) {
-      console.error("Error saving reviews to session storage:", error)
-    }
-  }, [reviews, isLoaded])
+    saveReviewsForPlace(placeId, reviews)
+  }, [reviews, isLoaded, placeId])
 
   // Save helpful reviews to session storage whenever they change
   useEffect(() => {
     if (!isLoaded) return
-    
-    try {
-      sessionStorage.setItem(HELPFUL_STORAGE_KEY, JSON.stringify(Array.from(helpfulReviews)))
-    } catch (error) {
-      console.error("Error saving helpful reviews to session storage:", error)
-    }
+    saveHelpfulReviews(helpfulReviews)
   }, [helpfulReviews, isLoaded])
 
   // Create new review
   const handleAddReview = (reviewData: Omit<Review, "id" | "date" | "helpful">) => {
     const newReview: Review = {
       ...reviewData,
-      id: Date.now().toString(),
+      id: `${placeId}-${Date.now()}`,
+      author: currentUser,
       date: "Just now",
       helpful: 0,
     }
@@ -151,8 +110,13 @@ export function PlaceReviews() {
 
   return (
     <div className="space-y-4">
+      {/* Current User Info */}
+      <div className="text-xs text-muted-foreground mb-2">
+        Reviewing as: <span className="font-medium text-foreground">{currentUser}</span>
+      </div>
+      
       {/* Add Review Button */}
-      <ReviewForm onSubmit={handleAddReview} />
+      <ReviewForm onSubmit={handleAddReview} currentUser={currentUser} />
 
       {/* Reviews List */}
       <div className="space-y-4 mt-6">
@@ -187,26 +151,27 @@ export function PlaceReviews() {
                     <span className="text-xs text-muted-foreground">{review.date}</span>
                   </div>
                 </div>
-                
-                {/* Action Buttons */}
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7"
-                    onClick={() => setEditingReview(review)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={() => setDeletingReviewId(review.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {/* Action Buttons - Only show for current user's reviews */}
+                {review.author === currentUser && (
+                  <div className="flex gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={() => setEditingReview(review)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      onClick={() => setDeletingReviewId(review.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
               
               <p className="text-sm text-muted-foreground leading-relaxed ml-12">

@@ -21,11 +21,11 @@ interface ReviewFormProps {
   onSubmit: (review: Omit<Review, "id" | "date" | "helpful">) => void
   editingReview?: Review
   onClose?: () => void
+  currentUser?: string
 }
 
-export function ReviewForm({ onSubmit, editingReview, onClose }: ReviewFormProps) {
+export function ReviewForm({ onSubmit, editingReview, onClose, currentUser }: ReviewFormProps) {
   const [open, setOpen] = useState(false)
-  const [author, setAuthor] = useState(editingReview?.author || "")
   const [rating, setRating] = useState(editingReview?.rating || 0)
   const [text, setText] = useState(editingReview?.text || "")
   const [hoveredRating, setHoveredRating] = useState(0)
@@ -33,18 +33,17 @@ export function ReviewForm({ onSubmit, editingReview, onClose }: ReviewFormProps
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!author.trim() || rating === 0 || !text.trim()) {
+    if (rating === 0 || !text.trim()) {
       return
     }
 
     onSubmit({
-      author: author.trim(),
+      author: currentUser || "Anonymous User",
       rating,
       text: text.trim(),
     })
 
     // Reset form
-    setAuthor("")
     setRating(0)
     setText("")
     setOpen(false)
@@ -59,7 +58,6 @@ export function ReviewForm({ onSubmit, editingReview, onClose }: ReviewFormProps
     if (!newOpen) {
       // Reset form when dialog closes
       if (!editingReview) {
-        setAuthor("")
         setRating(0)
         setText("")
       }
@@ -87,16 +85,12 @@ export function ReviewForm({ onSubmit, editingReview, onClose }: ReviewFormProps
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {/* Author Name */}
+            {/* Show current user */}
             <div className="grid gap-2">
-              <Label htmlFor="author">Your Name</Label>
-              <Input
-                id="author"
-                placeholder="Enter your name"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                required
-              />
+              <Label>Posting as</Label>
+              <div className="text-sm font-medium text-primary">
+                {currentUser || "Anonymous User"}
+              </div>
             </div>
 
             {/* Star Rating */}
@@ -161,7 +155,7 @@ export function ReviewForm({ onSubmit, editingReview, onClose }: ReviewFormProps
             </Button>
             <Button
               type="submit"
-              disabled={!author.trim() || rating === 0 || !text.trim()}
+              disabled={rating === 0 || !text.trim()}
             >
               {editingReview ? "Update Review" : "Submit Review"}
             </Button>
