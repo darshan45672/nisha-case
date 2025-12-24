@@ -55,6 +55,9 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState({ x: 30, y: 70 }) // Mock user location
   const [showDirections, setShowDirections] = useState(false)
   const [routePath, setRoutePath] = useState<{x: number, y: number}[]>([])
+  const [mapOffset, setMapOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   // Open panel on initial load
   useEffect(() => {
@@ -188,6 +191,53 @@ export default function Home() {
     setShowDirections(true)
   }
 
+  // Drag handlers for map panning
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setDragStart({
+      x: e.clientX - mapOffset.x,
+      y: e.clientY - mapOffset.y
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    
+    const newOffset = {
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    }
+    setMapOffset(newOffset)
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    setIsDragging(true)
+    setDragStart({
+      x: touch.clientX - mapOffset.x,
+      y: touch.clientY - mapOffset.y
+    })
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    
+    const touch = e.touches[0]
+    const newOffset = {
+      x: touch.clientX - dragStart.x,
+      y: touch.clientY - dragStart.y
+    }
+    setMapOffset(newOffset)
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+  }
+
   return (
     <TooltipProvider>
       <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
@@ -296,11 +346,21 @@ export default function Home() {
         <div 
           className="absolute inset-0 bg-[#e5e3df] transition-transform duration-300"
           style={{ 
-            transform: `scale(${zoomLevel})`,
+            transform: `scale(${zoomLevel}) translate(${mapOffset.x}px, ${mapOffset.y}px)`,
             transformOrigin: 'center center',
             minWidth: '100%',
-            minHeight: '100%'
+            minHeight: '100%',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+            touchAction: 'none'
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
