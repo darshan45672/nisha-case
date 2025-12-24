@@ -3,16 +3,29 @@
 import { useState, useEffect } from "react"
 import { Search, Menu, MapPin, Layers, Navigation2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { PlaceDetailsPanel } from "@/components/place/place-details-panel"
-import { placeData } from "@/lib/place-data"
+import { locations, PlaceData } from "@/lib/place-data"
 
 export default function Home() {
+  const [selectedPlace, setSelectedPlace] = useState<PlaceData>(locations[0])
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState("Blue Bottle Coffee")
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
 
   // Open panel on initial load
   useEffect(() => {
@@ -22,46 +35,90 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  const handlePlaceSelect = (place: PlaceData) => {
+    setSelectedPlace(place)
+    setSearchValue(place.name)
+    setSearchOpen(false)
+    setIsPanelOpen(true)
+  }
+
+  const filteredLocations = searchValue
+    ? locations.filter((loc) =>
+        loc.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        loc.category.toLowerCase().includes(searchValue.toLowerCase()) ||
+        loc.neighborhood.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    : locations
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
       {/* Top Search Bar */}
       <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0">
-        <div className={`bg-white rounded-xl shadow-lg transition-all ${
-          isSearchFocused ? 'shadow-2xl' : ''
-        }`}>
-          <div className="flex items-center gap-2 px-3 py-2.5">
+        <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+          <PopoverTrigger asChild>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 flex-shrink-0 hover:bg-gray-100 rounded-full"
-              onClick={() => setIsMenuOpen(true)}
+              variant="outline"
+              role="combobox"
+              aria-expanded={searchOpen}
+              className="w-full justify-start bg-white rounded-xl shadow-lg hover:shadow-2xl border-0 h-auto py-2.5 px-3 text-left font-normal"
             >
-              <Menu className="h-5 w-5 text-gray-700" />
-            </Button>
-            <div className="flex-1 flex items-center gap-2 min-w-0">
-              <Search className="h-5 w-5 text-gray-500 flex-shrink-0" />
-              <Input
-                type="text"
-                placeholder="Search Google Maps"
-                className="border-0 p-0 h-auto text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
+              <Menu 
+                className="h-5 w-5 mr-2 flex-shrink-0 text-gray-700 cursor-pointer" 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsMenuOpen(true)
+                }}
               />
-            </div>
-            {searchValue && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 flex-shrink-0 hover:bg-gray-100 rounded-full"
-                onClick={() => setSearchValue("")}
-              >
-                <X className="h-4 w-4 text-gray-500" />
-              </Button>
-            )}
-          </div>
-        </div>
+              <Search className="h-5 w-5 text-gray-500 flex-shrink-0 mr-2" />
+              <span className="flex-1 truncate text-sm">
+                {searchValue || "Search Google Maps"}
+              </span>
+              {searchValue && (
+                <X
+                  className="h-4 w-4 text-gray-500 flex-shrink-0 cursor-pointer hover:text-gray-700"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSearchValue("")
+                  }}
+                />
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[calc(100vw-1.5rem)] md:w-[600px] p-0" align="start">
+            <Command>
+              <CommandInput 
+                placeholder="Search places..." 
+                value={searchValue}
+                onValueChange={setSearchValue}
+              />
+              <CommandList>
+                <CommandEmpty>No places found.</CommandEmpty>
+                <CommandGroup heading="San Francisco Locations">
+                  {filteredLocations.map((location) => (
+                    <CommandItem
+                      key={location.id}
+                      value={location.name}
+                      onSelect={() => handlePlaceSelect(location)}
+                      className="flex items-start gap-3 py-3"
+                    >
+                      <MapPin className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm">{location.name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {location.category} · {location.neighborhood}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className="text-yellow-500 text-sm">★</span>
+                        <span className="text-sm font-medium">{location.rating}</span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Hamburger Menu Sidebar */}
@@ -139,17 +196,39 @@ export default function Home() {
             <rect width="100%" height="100%" fill="url(#parks)" />
           </svg>
 
-          {/* Place Marker - More accurate positioning */}
-          <div className="absolute top-[45%] left-1/2 md:left-[60%] -translate-x-1/2 -translate-y-full z-10">
-            <div className="relative">
-              <div className="relative animate-bounce">
-                <div className="absolute inset-0 bg-red-600 rounded-full blur-xl opacity-30 scale-150" />
-                <MapPin className="relative h-10 w-10 md:h-12 md:w-12 text-red-600 fill-red-600 drop-shadow-2xl" strokeWidth={1.5} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full" />
+          {/* All Location Markers */}
+          {locations.map((location) => (
+            <button
+              key={location.id}
+              onClick={() => handlePlaceSelect(location)}
+              className={`absolute -translate-x-1/2 -translate-y-full transition-all ${
+                selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
+              }`}
+              style={{
+                top: `${location.coordinates.y}%`,
+                left: `${location.coordinates.x}%`,
+              }}
+              aria-label={`Select ${location.name}`}
+            >
+              <div className="relative">
+                <div className={`relative ${selectedPlace.id === location.id ? 'animate-bounce' : ''}`}>
+                  <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
+                    selectedPlace.id === location.id ? 'bg-red-600' : 'bg-blue-600'
+                  }`} />
+                  <MapPin 
+                    className={`relative h-8 w-8 drop-shadow-2xl ${
+                      selectedPlace.id === location.id 
+                        ? 'text-red-600 fill-red-600' 
+                        : 'text-blue-600 fill-blue-600'
+                    }`}
+                    strokeWidth={1.5}
+                  />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
+                </div>
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-black/30 rounded-full blur-sm" />
               </div>
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 md:w-8 h-1.5 md:h-2 bg-black/30 rounded-full blur-sm" />
-            </div>
-          </div>
+            </button>
+          ))}
         </div>
 
         {/* Map Controls - Bottom Right */}
@@ -195,17 +274,19 @@ export default function Home() {
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0 text-left">
                 <h3 className="font-semibold text-gray-900 mb-1 truncate text-base">
-                  {placeData.name}
+                  {selectedPlace.name}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <span className="text-yellow-500">★</span>
-                    <span className="font-medium">{placeData.rating}</span>
+                    <span className="font-medium">{selectedPlace.rating}</span>
                   </div>
                   <span>·</span>
-                  <span>{placeData.category}</span>
+                  <span>{selectedPlace.category}</span>
                   <span>·</span>
-                  <span className="text-green-600 font-medium">Open</span>
+                  <span className={selectedPlace.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                    {selectedPlace.isOpen ? "Open" : "Closed"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -215,7 +296,7 @@ export default function Home() {
 
       {/* Place Details Panel */}
       <PlaceDetailsPanel
-        place={placeData}
+        place={selectedPlace}
         open={isPanelOpen}
         onOpenChange={setIsPanelOpen}
       />
