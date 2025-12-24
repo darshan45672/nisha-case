@@ -189,7 +189,10 @@ export default function Home() {
     
     setRoutePath(path)
     setShowDirections(true)
-    setIsPanelOpen(false) // Close panel to view route
+    // Only close panel on desktop to view route, keep open on mobile
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setIsPanelOpen(false)
+    }
   }
 
   // Drag handlers for map panning

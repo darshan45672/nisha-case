@@ -20,7 +20,6 @@ import { PhotoGallery } from "./photo-gallery"
 import { PlaceAddress } from "./place-address"
 import { PlaceReviews } from "./place-reviews"
 import { PlaceData } from "@/lib/place-data"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Clock, MapPin, Star, Image as ImageIcon, Navigation } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -46,147 +45,145 @@ function PlaceContent({
   onGetDirections?: () => void
 }) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <PlaceHeader
         name={place.name}
         category={place.category}
       />
-      <ScrollArea className="flex-1 h-full">`
-        <div className="pb-6 px-4">
-          {/* Navigation Alert */}
-          {showDirections && (
-            <Alert className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-              <Navigation className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="ml-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    Navigation active to {place.name}
-                  </span>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-7 text-xs text-blue-700 hover:text-blue-900 hover:bg-blue-100"
-                    onClick={onStopDirections}
-                  >
-                    Stop
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+      <div className="flex-1 overflow-y-auto pb-6 px-4">
+        {/* Navigation Alert */}
+        {showDirections && (
+          <Alert className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+            <Navigation className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="ml-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Navigation active to {place.name}
+                </span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-7 text-xs text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                  onClick={onStopDirections}
+                >
+                  Stop
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {/* Rating & Actions Card */}
+        <Card className="border-0 shadow-none">
+          <CardContent className="pt-4 px-0 space-y-4">
+            <PlaceRating
+              rating={place.rating}
+              totalReviews={place.totalReviews}
+              priceLevel={place.priceLevel}
+            />
+            <PlaceActions onGetDirections={onGetDirections} />
+          </CardContent>
+        </Card>
+
+        <Separator className="my-4" />
+
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="text-xs">
+              <MapPin className="h-3.5 w-3.5 mr-1" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="text-xs">
+              <ImageIcon className="h-3.5 w-3.5 mr-1" />
+              Photos
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="text-xs">
+              <Star className="h-3.5 w-3.5 mr-1" />
+              Reviews
+            </TabsTrigger>
+          </TabsList>
           
-          {/* Rating & Actions Card */}
-          <Card className="border-0 shadow-none">
-            <CardContent className="pt-4 px-0 space-y-4">
-              <PlaceRating
-                rating={place.rating}
-                totalReviews={place.totalReviews}
-                priceLevel={place.priceLevel}
-              />
-              <PlaceActions onGetDirections={onGetDirections} />
-            </CardContent>
-          </Card>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="mt-4 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Location & Contact
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <PlaceAddress
+                  address={place.address}
+                  neighborhood={place.neighborhood}
+                  phone={place.phone}
+                  website={place.website}
+                />
+              </CardContent>
+            </Card>
 
-          <Separator className="my-4" />
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Hours
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PlaceTimings
+                  isOpen={place.isOpen}
+                  openingTime={place.openingTime}
+                  timings={place.timings}
+                />
+              </CardContent>
+            </Card>
 
-          {/* Main Content Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview" className="text-xs">
-                <MapPin className="h-3.5 w-3.5 mr-1" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="photos" className="text-xs">
-                <ImageIcon className="h-3.5 w-3.5 mr-1" />
-                Photos
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="text-xs">
-                <Star className="h-3.5 w-3.5 mr-1" />
-                Reviews
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-4 space-y-4">
+            {place.description && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Location & Contact
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <PlaceAddress
-                    address={place.address}
-                    neighborhood={place.neighborhood}
-                    phone={place.phone}
-                    website={place.website}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Hours
-                  </CardTitle>
+                  <CardTitle className="text-base">About</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PlaceTimings
-                    isOpen={place.isOpen}
-                    openingTime={place.openingTime}
-                    timings={place.timings}
-                  />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {place.description}
+                  </p>
                 </CardContent>
               </Card>
+            )}
+          </TabsContent>
 
-              {place.description && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">About</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {place.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+          {/* Photos Tab */}
+          <TabsContent value="photos" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Photo Gallery</CardTitle>
+                <CardDescription>
+                  {place.photos.length} photos available
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PhotoGallery photos={place.photos} />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            {/* Photos Tab */}
-            <TabsContent value="photos" className="mt-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Photo Gallery</CardTitle>
-                  <CardDescription>
-                    {place.photos.length} photos available
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <PhotoGallery photos={place.photos} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Reviews Tab */}
-            <TabsContent value="reviews" className="mt-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Customer Reviews</CardTitle>
-                  <CardDescription>
-                    {place.totalReviews.toLocaleString()} reviews
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <PlaceReviews />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </ScrollArea>
+          {/* Reviews Tab */}
+          <TabsContent value="reviews" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Customer Reviews</CardTitle>
+                <CardDescription>
+                  {place.totalReviews.toLocaleString()} reviews
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PlaceReviews />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
