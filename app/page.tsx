@@ -105,22 +105,84 @@ export default function Home() {
   }
 
   const handleGetDirections = (destination: PlaceData) => {
-    // Calculate path from user location to destination
-    const steps = 20 // Number of points in the path
+    // Calculate realistic path following street grid
     const path: {x: number, y: number}[] = []
     
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps
-      // Add some curve to the path for realism
-      const midX = (userLocation.x + destination.coordinates.x) / 2
-      const midY = (userLocation.y + destination.coordinates.y) / 2
-      const curveOffset = Math.sin(t * Math.PI) * 5 // Curve intensity
+    const start = { x: userLocation.x, y: userLocation.y }
+    const end = { x: destination.coordinates.x, y: destination.coordinates.y }
+    
+    // Add starting point
+    path.push(start)
+    
+    // Calculate intermediate waypoints following street grid
+    // Use Manhattan distance approach - move horizontally then vertically (or vice versa)
+    const dx = end.x - start.x
+    const dy = end.y - start.y
+    
+    // Determine which direction to go first based on distance
+    const goHorizontalFirst = Math.abs(dx) > Math.abs(dy)
+    
+    if (goHorizontalFirst) {
+      // Move horizontally first, then vertically
+      // Add turns at street intersections (every ~10 units)
+      const horizontalSteps = Math.ceil(Math.abs(dx) / 10)
+      const verticalSteps = Math.ceil(Math.abs(dy) / 10)
       
+      // Horizontal movement with small steps for smooth animation
+      for (let i = 1; i <= horizontalSteps; i++) {
+        const t = i / horizontalSteps
+        path.push({
+          x: start.x + dx * t,
+          y: start.y
+        })
+      }
+      
+      // Turn point
       path.push({
-        x: userLocation.x + (destination.coordinates.x - userLocation.x) * t + curveOffset,
-        y: userLocation.y + (destination.coordinates.y - userLocation.y) * t
+        x: end.x,
+        y: start.y
       })
+      
+      // Vertical movement
+      for (let i = 1; i <= verticalSteps; i++) {
+        const t = i / verticalSteps
+        path.push({
+          x: end.x,
+          y: start.y + dy * t
+        })
+      }
+    } else {
+      // Move vertically first, then horizontally
+      const verticalSteps = Math.ceil(Math.abs(dy) / 10)
+      const horizontalSteps = Math.ceil(Math.abs(dx) / 10)
+      
+      // Vertical movement
+      for (let i = 1; i <= verticalSteps; i++) {
+        const t = i / verticalSteps
+        path.push({
+          x: start.x,
+          y: start.y + dy * t
+        })
+      }
+      
+      // Turn point
+      path.push({
+        x: start.x,
+        y: end.y
+      })
+      
+      // Horizontal movement
+      for (let i = 1; i <= horizontalSteps; i++) {
+        const t = i / horizontalSteps
+        path.push({
+          x: start.x + dx * t,
+          y: end.y
+        })
+      }
     }
+    
+    // Add final destination
+    path.push(end)
     
     setRoutePath(path)
     setShowDirections(true)
