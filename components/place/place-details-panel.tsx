@@ -218,7 +218,7 @@ export function PlaceDetailsPanel({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} modal={false}>
       <DrawerContent className="max-h-[92vh] flex flex-col">
         <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-2 mt-3" />
         <DrawerTitle className="sr-only">{place.name}</DrawerTitle>
