@@ -123,3 +123,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.animate-dash {
+  animation: dash 1s linear infinite;
+}

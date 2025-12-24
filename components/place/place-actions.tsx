@@ -3,12 +3,17 @@
 import { Navigation, Phone, Bookmark, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function PlaceActions() {
+interface PlaceActionsProps {
+  onGetDirections?: () => void
+}
+
+export function PlaceActions({ onGetDirections }: PlaceActionsProps) {
   return (
     <div className="grid grid-cols-4 gap-2">
       <Button
         variant="ghost"
         className="flex flex-col items-center justify-center h-auto py-3 gap-1.5 hover:bg-accent"
+        onClick={onGetDirections}
       >
         <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center shadow-sm">
           <Navigation className="h-4 w-4 text-primary-foreground" />

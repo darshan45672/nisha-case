@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Menu, MapPin, Layers, Navigation2, X, Map, Satellite, Star } from "lucide-react"
+import { Search, Menu, MapPin, Layers, Navigation2, X, Map, Satellite, Star, Navigation } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   HoverCard,
@@ -51,6 +52,9 @@ export default function Home() {
   const [zoomLevel, setZoomLevel] = useState(1)
   const [showTraffic, setShowTraffic] = useState(false)
   const [showTransit, setShowTransit] = useState(false)
+  const [userLocation, setUserLocation] = useState({ x: 30, y: 70 }) // Mock user location
+  const [showDirections, setShowDirections] = useState(false)
+  const [routePath, setRoutePath] = useState<{x: number, y: number}[]>([])
 
   // Open panel on initial load
   useEffect(() => {
@@ -58,6 +62,18 @@ export default function Home() {
       setIsPanelOpen(true)
     }, 500)
     return () => clearTimeout(timer)
+  }, [])
+
+  // Mock live location tracking - simulate slight movement
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUserLocation(prev => ({
+        x: prev.x + (Math.random() - 0.5) * 0.3, // Small random movement
+        y: prev.y + (Math.random() - 0.5) * 0.3
+      }))
+    }, 2000) // Update every 2 seconds
+
+    return () => clearInterval(interval)
   }, [])
 
   const handlePlaceSelect = (place: PlaceData) => {
@@ -88,9 +104,41 @@ export default function Home() {
     setZoomLevel(1)
   }
 
+  const handleGetDirections = (destination: PlaceData) => {
+    // Calculate path from user location to destination
+    const steps = 20 // Number of points in the path
+    const path: {x: number, y: number}[] = []
+    
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps
+      // Add some curve to the path for realism
+      const midX = (userLocation.x + destination.coordinates.x) / 2
+      const midY = (userLocation.y + destination.coordinates.y) / 2
+      const curveOffset = Math.sin(t * Math.PI) * 5 // Curve intensity
+      
+      path.push({
+        x: userLocation.x + (destination.coordinates.x - userLocation.x) * t + curveOffset,
+        y: userLocation.y + (destination.coordinates.y - userLocation.y) * t
+      })
+    }
+    
+    setRoutePath(path)
+    setShowDirections(true)
+  }
+
   return (
     <TooltipProvider>
       <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
+      {/* Live Location Badge - Top Left */}
+      {showDirections && (
+        <div className="absolute top-20 left-3 z-30">
+          <Badge className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+            <Navigation className="h-3 w-3 mr-1 animate-pulse" />
+            Navigating to {selectedPlace.name}
+          </Badge>
+        </div>
+      )}
+      
       {/* Top Search Bar */}
       <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0">
         <Popover open={searchOpen} onOpenChange={setSearchOpen}>
@@ -256,7 +304,56 @@ export default function Home() {
             <text x="60%" y="75%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Howard Street</text>
             <text x="15%" y="85%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Golden Gate Park</text>
             <text x="85%" y="20%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Fisherman's Wharf</text>
+            
+            {/* Direction Path */}
+            {showDirections && routePath.length > 0 && (
+              <>
+                {/* Main route line */}
+                <polyline
+                  points={routePath.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                  fill="none"
+                  stroke="#4285f4"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.8"
+                />
+                {/* Animated dashed overlay */}
+                <polyline
+                  points={routePath.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="10,10"
+                  opacity="0.6"
+                  className="animate-dash"
+                />
+              </>
+            )}
           </svg>
+
+          {/* User's Live Location Marker */}
+          <div
+            className="absolute -translate-x-1/2 -translate-y-1/2 z-30"
+            style={{
+              top: `${userLocation.y}%`,
+              left: `${userLocation.x}%`,
+            }}
+          >
+            <div className="relative">
+              {/* Pulsing circle animation */}
+              <div className="absolute inset-0 -m-3">
+                <div className="w-6 h-6 bg-blue-500 rounded-full opacity-20 animate-ping" />
+              </div>
+              {/* Main location dot */}
+              <div className="relative w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-lg">
+                <div className="absolute inset-0.5 bg-white rounded-full" />
+              </div>
+              {/* Accuracy circle */}
+              <div className="absolute -inset-4 border-2 border-blue-400 rounded-full opacity-30" />
+            </div>
+          </div>
 
           {/* All Location Markers */}
           {locations.map((location) => (
@@ -329,16 +426,31 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground line-clamp-2">{location.description}</p>
                   )}
                   
-                  <Button 
-                    size="sm" 
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handlePlaceSelect(location)
-                    }}
-                  >
-                    View Details
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePlaceSelect(location)
+                      }}
+                    >
+                      View Details
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleGetDirections(location)
+                        handlePlaceSelect(location)
+                      }}
+                    >
+                      <Navigation className="h-4 w-4 mr-1" />
+                      Directions
+                    </Button>
+                  </div>
                 </div>
               </HoverCardContent>
             </HoverCard>
@@ -485,6 +597,12 @@ export default function Home() {
         place={selectedPlace}
         open={isPanelOpen}
         onOpenChange={setIsPanelOpen}
+        showDirections={showDirections}
+        onStopDirections={() => {
+          setShowDirections(false)
+          setRoutePath([])
+        }}
+        onGetDirections={() => handleGetDirections(selectedPlace)}
       />
     </div>
     </TooltipProvider>

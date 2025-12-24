@@ -19,15 +19,30 @@ import { PlaceAddress } from "./place-address"
 import { PlaceReviews } from "./place-reviews"
 import { PlaceData } from "@/lib/place-data"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Clock, MapPin, Star, Image as ImageIcon } from "lucide-react"
+import { Clock, MapPin, Star, Image as ImageIcon, Navigation } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 
 interface PlaceDetailsPanelProps {
   place: PlaceData
   open: boolean
   onOpenChange: (open: boolean) => void
+  showDirections?: boolean
+  onStopDirections?: () => void
+  onGetDirections?: () => void
 }
 
-function PlaceContent({ place }: { place: PlaceData }) {
+function PlaceContent({ 
+  place, 
+  showDirections, 
+  onStopDirections, 
+  onGetDirections 
+}: { 
+  place: PlaceData
+  showDirections?: boolean
+  onStopDirections?: () => void
+  onGetDirections?: () => void
+}) {
   return (
     <div className="flex flex-col h-full">
       <PlaceHeader
@@ -36,6 +51,28 @@ function PlaceContent({ place }: { place: PlaceData }) {
       />
       <ScrollArea className="flex-1">
         <div className="pb-6 px-4">
+          {/* Navigation Alert */}
+          {showDirections && (
+            <Alert className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+              <Navigation className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="ml-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Navigation active to {place.name}
+                  </span>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-7 text-xs text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                    onClick={onStopDirections}
+                  >
+                    Stop
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {/* Rating & Actions Card */}
           <Card className="border-0 shadow-none">
             <CardContent className="pt-4 px-0 space-y-4">
@@ -44,7 +81,7 @@ function PlaceContent({ place }: { place: PlaceData }) {
                 totalReviews={place.totalReviews}
                 priceLevel={place.priceLevel}
               />
-              <PlaceActions />
+              <PlaceActions onGetDirections={onGetDirections} />
             </CardContent>
           </Card>
 
@@ -156,6 +193,9 @@ export function PlaceDetailsPanel({
   place,
   open,
   onOpenChange,
+  showDirections,
+  onStopDirections,
+  onGetDirections,
 }: PlaceDetailsPanelProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
@@ -167,7 +207,12 @@ export function PlaceDetailsPanel({
           className="w-full sm:max-w-[420px] md:max-w-[440px] p-0 flex flex-col"
         >
           <SheetTitle className="sr-only">{place.name}</SheetTitle>
-          <PlaceContent place={place} />
+          <PlaceContent 
+            place={place} 
+            showDirections={showDirections}
+            onStopDirections={onStopDirections}
+            onGetDirections={onGetDirections}
+          />
         </SheetContent>
       </Sheet>
     )
@@ -177,7 +222,12 @@ export function PlaceDetailsPanel({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[92vh] flex flex-col">
         <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-2 mt-3" />
-        <PlaceContent place={place} />
+        <PlaceContent 
+          place={place} 
+          showDirections={showDirections}
+          onStopDirections={onStopDirections}
+          onGetDirections={onGetDirections}
+        />
       </DrawerContent>
     </Drawer>
   )
