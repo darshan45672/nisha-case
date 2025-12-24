@@ -240,52 +240,52 @@ export default function Home() {
             minHeight: '100%'
           }}
         >
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               {/* Main roads */}
-              <pattern id="main-roads" width="200" height="200" patternUnits="userSpaceOnUse">
-                <rect width="200" height="200" fill={mapType === "satellite" ? "#2d3436" : "#f2f0ed"} />
+              <pattern id="main-roads" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect width="20" height="20" fill={mapType === "satellite" ? "#2d3436" : "#f2f0ed"} />
                 {/* Horizontal main road */}
-                <rect x="0" y="96" width="200" height="8" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
-                <line x1="0" y1="100" x2="200" y2="100" stroke="#f7c945" strokeWidth="1" strokeDasharray="10,10" />
+                <rect x="0" y="9.6" width="20" height="0.8" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
+                <line x1="0" y1="10" x2="20" y2="10" stroke="#f7c945" strokeWidth="0.1" strokeDasharray="1,1" />
                 {/* Vertical main road */}
-                <rect x="96" y="0" width="8" height="200" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
-                <line x1="100" y1="0" x2="100" y2="200" stroke="#f7c945" strokeWidth="1" strokeDasharray="10,10" />
+                <rect x="9.6" y="0" width="0.8" height="20" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
+                <line x1="10" y1="0" x2="10" y2="20" stroke="#f7c945" strokeWidth="0.1" strokeDasharray="1,1" />
               </pattern>
               
               {/* Smaller streets */}
-              <pattern id="streets" width="80" height="80" patternUnits="userSpaceOnUse">
-                <rect width="80" height="80" fill="transparent" />
-                <rect x="0" y="38" width="80" height="4" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
-                <rect x="38" y="0" width="4" height="80" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
+              <pattern id="streets" width="8" height="8" patternUnits="userSpaceOnUse">
+                <rect width="8" height="8" fill="transparent" />
+                <rect x="0" y="3.8" width="8" height="0.4" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
+                <rect x="3.8" y="0" width="0.4" height="8" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
                 {showTraffic && (
                   <>
-                    <line x1="0" y1="40" x2="80" y2="40" stroke="#ef4444" strokeWidth="2" opacity="0.6" />
-                    <line x1="40" y1="0" x2="40" y2="80" stroke="#22c55e" strokeWidth="2" opacity="0.6" />
+                    <line x1="0" y1="4" x2="8" y2="4" stroke="#ef4444" strokeWidth="0.2" opacity="0.6" />
+                    <line x1="4" y1="0" x2="4" y2="8" stroke="#22c55e" strokeWidth="0.2" opacity="0.6" />
                   </>
                 )}
               </pattern>
               
               {/* Buildings */}
-              <pattern id="buildings" width="80" height="80" patternUnits="userSpaceOnUse">
-                <rect width="80" height="80" fill="transparent" />
-                <rect x="5" y="5" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
-                <rect x="45" y="5" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
-                <rect x="5" y="45" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
-                <rect x="45" y="45" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+              <pattern id="buildings" width="8" height="8" patternUnits="userSpaceOnUse">
+                <rect width="8" height="8" fill="transparent" />
+                <rect x="0.5" y="0.5" width="3" height="3" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="4.5" y="0.5" width="3" height="3" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="0.5" y="4.5" width="3" height="3" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="4.5" y="4.5" width="3" height="3" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
               </pattern>
               
               {/* Parks */}
-              <pattern id="parks" width="300" height="300" patternUnits="userSpaceOnUse">
-                <rect width="300" height="300" fill="transparent" />
-                <ellipse cx="150" cy="150" rx="60" ry="60" fill="#c8ddb5" opacity="0.5" />
+              <pattern id="parks" width="30" height="30" patternUnits="userSpaceOnUse">
+                <rect width="30" height="30" fill="transparent" />
+                <ellipse cx="15" cy="15" rx="6" ry="6" fill="#c8ddb5" opacity="0.5" />
               </pattern>
 
               {/* Transit lines */}
               {showTransit && (
-                <pattern id="transit" width="400" height="400" patternUnits="userSpaceOnUse">
-                  <line x1="0" y1="200" x2="400" y2="200" stroke="#3b82f6" strokeWidth="3" strokeDasharray="5,5" opacity="0.7" />
-                  <line x1="200" y1="0" x2="200" y2="400" stroke="#8b5cf6" strokeWidth="3" strokeDasharray="5,5" opacity="0.7" />
+                <pattern id="transit" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="20" x2="40" y2="20" stroke="#3b82f6" strokeWidth="0.3" strokeDasharray="0.5,0.5" opacity="0.7" />
+                  <line x1="20" y1="0" x2="20" y2="40" stroke="#8b5cf6" strokeWidth="0.3" strokeDasharray="0.5,0.5" opacity="0.7" />
                 </pattern>
               )}
             </defs>
@@ -297,36 +297,36 @@ export default function Home() {
             {showTransit && <rect width="100%" height="100%" fill="url(#transit)" />}
             
             {/* Street Names */}
-            <text x="20%" y="15%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Market Street</text>
-            <text x="50%" y="30%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Mission Street</text>
-            <text x="75%" y="45%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Valencia Street</text>
-            <text x="30%" y="60%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Folsom Street</text>
-            <text x="60%" y="75%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Howard Street</text>
-            <text x="15%" y="85%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Golden Gate Park</text>
-            <text x="85%" y="20%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Fisherman's Wharf</text>
+            <text x="20" y="15" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.4" fontWeight="500" opacity="0.8">Market Street</text>
+            <text x="50" y="30" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.4" fontWeight="500" opacity="0.8">Mission Street</text>
+            <text x="75" y="45" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.4" fontWeight="500" opacity="0.8">Valencia Street</text>
+            <text x="30" y="60" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.4" fontWeight="500" opacity="0.8">Folsom Street</text>
+            <text x="60" y="75" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.4" fontWeight="500" opacity="0.8">Howard Street</text>
+            <text x="15" y="85" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.2" fontWeight="500" opacity="0.7">Golden Gate Park</text>
+            <text x="85" y="20" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="1.2" fontWeight="500" opacity="0.7">Fisherman's Wharf</text>
             
             {/* Direction Path */}
             {showDirections && routePath.length > 0 && (
               <>
                 {/* Main route line */}
                 <polyline
-                  points={routePath.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                  points={routePath.map(p => `${p.x},${p.y}`).join(' ')}
                   fill="none"
                   stroke="#4285f4"
-                  strokeWidth="4"
+                  strokeWidth="0.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity="0.8"
                 />
                 {/* Animated dashed overlay */}
                 <polyline
-                  points={routePath.map(p => `${p.x}%,${p.y}%`).join(' ')}
+                  points={routePath.map(p => `${p.x},${p.y}`).join(' ')}
                   fill="none"
                   stroke="#fff"
-                  strokeWidth="2"
+                  strokeWidth="0.3"
                   strokeLinecap="round"
-                  strokeDasharray="10,10"
-                  opacity="0.6"
+                  strokeDasharray="1,1"
+                  opacity="0.9"
                   className="animate-dash"
                 />
               </>
