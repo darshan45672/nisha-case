@@ -40,12 +40,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { PlaceDetailsPanel } from "@/components/place/place-details-panel"
+import { SavedLocationsList } from "@/components/saved-locations-list"
 import { locations, PlaceData } from "@/lib/place-data"
 
 export default function Home() {
   const [selectedPlace, setSelectedPlace] = useState<PlaceData>(locations[0])
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showSavedPlaces, setShowSavedPlaces] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchValue, setSearchValue] = useState("")
   const [mapType, setMapType] = useState("default")
@@ -84,6 +86,21 @@ export default function Home() {
     setSearchValue(place.name)
     setSearchOpen(false)
     setIsPanelOpen(true)
+    setShowSavedPlaces(false)
+  }
+
+  const handleSelectSavedLocation = (locationId: string) => {
+    const location = locations.find(loc => loc.id === locationId)
+    if (location) {
+      handlePlaceSelect(location)
+      setIsMenuOpen(false)
+    }
+  }
+
+  const handleShowSavedPlaces = () => {
+    setShowSavedPlaces(true)
+    setIsPanelOpen(false)
+    setIsMenuOpen(false)
   }
 
   const filteredLocations = searchValue
@@ -319,30 +336,38 @@ export default function Home() {
 
       {/* Hamburger Menu Sidebar */}
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent side="left" className="w-[280px] sm:w-[350px]">
-          <SheetHeader>
+        <SheetContent side="left" className="w-[280px] sm:w-[350px] p-0 flex flex-col">
+          <SheetHeader className="px-6 pt-6 pb-4">
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
-          <div className="py-6 space-y-4">
-            <div className="space-y-2">
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
-                <Search className="mr-2 h-4 w-4" />
-                Search
-              </Button>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
-                <Navigation2 className="mr-2 h-4 w-4" />
-                Directions
-              </Button>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
-                <MapPin className="mr-2 h-4 w-4" />
-                Saved Places
-              </Button>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
-                <Layers className="mr-2 h-4 w-4" />
-                Your Timeline
-              </Button>
-            </div>
+          <div className="space-y-2 px-4">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
+              <Navigation2 className="mr-2 h-4 w-4" />
+              Directions
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={handleShowSavedPlaces}>
+              <MapPin className="mr-2 h-4 w-4" />
+              Saved Places
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMenuOpen(false)}>
+              <Layers className="mr-2 h-4 w-4" />
+              Your Timeline
+            </Button>
           </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Saved Places Sidebar */}
+      <Sheet open={showSavedPlaces} onOpenChange={setShowSavedPlaces}>
+        <SheetContent side="left" className="w-[280px] sm:w-[350px] p-0 flex flex-col">
+          <SheetHeader className="px-6 pt-6 pb-4">
+            <SheetTitle>Saved Places</SheetTitle>
+          </SheetHeader>
+          <SavedLocationsList onSelectLocation={handleSelectSavedLocation} />
         </SheetContent>
       </Sheet>
 
@@ -751,7 +776,7 @@ export default function Home() {
         }}
         onGetDirections={() => handleGetDirections(selectedPlace)}
       />
-    </div>
+      </div>
     </TooltipProvider>
   )
 }

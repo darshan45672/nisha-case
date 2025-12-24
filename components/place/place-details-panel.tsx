@@ -81,7 +81,7 @@ function PlaceContent({
               totalReviews={place.totalReviews}
               priceLevel={place.priceLevel}
             />
-            <PlaceActions onGetDirections={onGetDirections} />
+            <PlaceActions place={place} onGetDirections={onGetDirections} />
           </CardContent>
         </Card>
 
