@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Menu, MapPin, Layers, Navigation2, X } from "lucide-react"
+import { Search, Menu, MapPin, Layers, Navigation2, X, Map, Satellite } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
@@ -17,6 +17,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { PlaceDetailsPanel } from "@/components/place/place-details-panel"
 import { locations, PlaceData } from "@/lib/place-data"
 
@@ -26,6 +42,10 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchValue, setSearchValue] = useState("")
+  const [mapType, setMapType] = useState("default")
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [showTraffic, setShowTraffic] = useState(false)
+  const [showTransit, setShowTransit] = useState(false)
 
   // Open panel on initial load
   useEffect(() => {
@@ -50,8 +70,22 @@ export default function Home() {
       )
     : locations
 
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + 0.2, 3))
+  }
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - 0.2, 0.5))
+  }
+
+  const handleResetNorth = () => {
+    // Reset map orientation to north
+    setZoomLevel(1)
+  }
+
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
+    <TooltipProvider>
+      <div className="flex h-screen w-full overflow-hidden bg-[#e5e3df]">
       {/* Top Search Bar */}
       <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0">
         <Popover open={searchOpen} onOpenChange={setSearchOpen}>
@@ -153,34 +187,46 @@ export default function Home() {
       {/* Map Container */}
       <div className="relative flex-1 w-full h-full">
         {/* Enhanced Map with realistic design */}
-        <div className="absolute inset-0 bg-[#e5e3df]">
+        <div 
+          className="absolute inset-0 bg-[#e5e3df] transition-transform duration-300"
+          style={{ 
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: 'center center'
+          }}
+        >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               {/* Main roads */}
               <pattern id="main-roads" width="200" height="200" patternUnits="userSpaceOnUse">
-                <rect width="200" height="200" fill="#f2f0ed" />
+                <rect width="200" height="200" fill={mapType === "satellite" ? "#2d3436" : "#f2f0ed"} />
                 {/* Horizontal main road */}
-                <rect x="0" y="96" width="200" height="8" fill="#fff" />
+                <rect x="0" y="96" width="200" height="8" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
                 <line x1="0" y1="100" x2="200" y2="100" stroke="#f7c945" strokeWidth="1" strokeDasharray="10,10" />
                 {/* Vertical main road */}
-                <rect x="96" y="0" width="8" height="200" fill="#fff" />
+                <rect x="96" y="0" width="8" height="200" fill={mapType === "satellite" ? "#4a5568" : "#fff"} />
                 <line x1="100" y1="0" x2="100" y2="200" stroke="#f7c945" strokeWidth="1" strokeDasharray="10,10" />
               </pattern>
               
               {/* Smaller streets */}
               <pattern id="streets" width="80" height="80" patternUnits="userSpaceOnUse">
                 <rect width="80" height="80" fill="transparent" />
-                <rect x="0" y="38" width="80" height="4" fill="#fff" opacity="0.8" />
-                <rect x="38" y="0" width="4" height="80" fill="#fff" opacity="0.8" />
+                <rect x="0" y="38" width="80" height="4" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
+                <rect x="38" y="0" width="4" height="80" fill={mapType === "satellite" ? "#4a5568" : "#fff"} opacity="0.8" />
+                {showTraffic && (
+                  <>
+                    <line x1="0" y1="40" x2="80" y2="40" stroke="#ef4444" strokeWidth="2" opacity="0.6" />
+                    <line x1="40" y1="0" x2="40" y2="80" stroke="#22c55e" strokeWidth="2" opacity="0.6" />
+                  </>
+                )}
               </pattern>
               
               {/* Buildings */}
               <pattern id="buildings" width="80" height="80" patternUnits="userSpaceOnUse">
                 <rect width="80" height="80" fill="transparent" />
-                <rect x="5" y="5" width="30" height="30" fill="#d4d2ce" opacity="0.4" />
-                <rect x="45" y="5" width="30" height="30" fill="#d4d2ce" opacity="0.4" />
-                <rect x="5" y="45" width="30" height="30" fill="#d4d2ce" opacity="0.4" />
-                <rect x="45" y="45" width="30" height="30" fill="#d4d2ce" opacity="0.4" />
+                <rect x="5" y="5" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="45" y="5" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="5" y="45" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
+                <rect x="45" y="45" width="30" height="30" fill={mapType === "satellite" ? "#1a202c" : "#d4d2ce"} opacity="0.4" />
               </pattern>
               
               {/* Parks */}
@@ -188,12 +234,21 @@ export default function Home() {
                 <rect width="300" height="300" fill="transparent" />
                 <ellipse cx="150" cy="150" rx="60" ry="60" fill="#c8ddb5" opacity="0.5" />
               </pattern>
+
+              {/* Transit lines */}
+              {showTransit && (
+                <pattern id="transit" width="400" height="400" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="200" x2="400" y2="200" stroke="#3b82f6" strokeWidth="3" strokeDasharray="5,5" opacity="0.7" />
+                  <line x1="200" y1="0" x2="200" y2="400" stroke="#8b5cf6" strokeWidth="3" strokeDasharray="5,5" opacity="0.7" />
+                </pattern>
+              )}
             </defs>
             
             <rect width="100%" height="100%" fill="url(#main-roads)" />
             <rect width="100%" height="100%" fill="url(#streets)" />
             <rect width="100%" height="100%" fill="url(#buildings)" />
             <rect width="100%" height="100%" fill="url(#parks)" />
+            {showTransit && <rect width="100%" height="100%" fill="url(#transit)" />}
           </svg>
 
           {/* All Location Markers */}
@@ -233,36 +288,108 @@ export default function Home() {
 
         {/* Map Controls - Bottom Right */}
         <div className="absolute bottom-20 md:bottom-6 right-3 md:right-6 flex flex-col gap-2 z-20">
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
-          >
-            <Layers className="h-5 w-5 text-gray-700" />
-          </Button>
+          {/* Layers Menu */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
+                  >
+                    <Layers className="h-5 w-5 text-gray-700" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Map layers</p>
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Map Type</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={mapType} onValueChange={setMapType}>
+                <DropdownMenuRadioItem value="default">
+                  <Map className="h-4 w-4 mr-2" />
+                  Default
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="satellite">
+                  <Satellite className="h-4 w-4 mr-2" />
+                  Satellite
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Overlays</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setShowTraffic(!showTraffic)}>
+                <div className="flex items-center justify-between w-full">
+                  <span>Traffic</span>
+                  <div className={`w-4 h-4 rounded border ${showTraffic ? 'bg-primary border-primary' : 'border-input'}`}>
+                    {showTraffic && <div className="text-primary-foreground text-xs">✓</div>}
+                  </div>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowTransit(!showTransit)}>
+                <div className="flex items-center justify-between w-full">
+                  <span>Transit</span>
+                  <div className={`w-4 h-4 rounded border ${showTransit ? 'bg-primary border-primary' : 'border-input'}`}>
+                    {showTransit && <div className="text-primary-foreground text-xs">✓</div>}
+                  </div>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Zoom Controls */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 md:h-11 md:w-11 rounded-none border-b hover:bg-gray-100"
-            >
-              <span className="text-xl font-semibold text-gray-700">+</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 md:h-11 md:w-11 rounded-none hover:bg-gray-100"
-            >
-              <span className="text-xl font-semibold text-gray-700">−</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 md:h-11 md:w-11 rounded-none border-b hover:bg-gray-100"
+                  onClick={handleZoomIn}
+                >
+                  <span className="text-xl font-semibold text-gray-700">+</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Zoom in</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 md:h-11 md:w-11 rounded-none hover:bg-gray-100"
+                  onClick={handleZoomOut}
+                >
+                  <span className="text-xl font-semibold text-gray-700">−</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Zoom out</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
-          >
-            <Navigation2 className="h-5 w-5 text-blue-600" />
-          </Button>
+
+          {/* Compass/Reset North */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-white shadow-lg hover:shadow-xl hover:bg-gray-50"
+                onClick={handleResetNorth}
+              >
+                <Navigation2 className="h-5 w-5 text-blue-600" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Reset orientation</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Place Info Card - Mobile Only */}
@@ -301,5 +428,6 @@ export default function Home() {
         onOpenChange={setIsPanelOpen}
       />
     </div>
+    </TooltipProvider>
   )
 }
