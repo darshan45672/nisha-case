@@ -1,9 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Menu, MapPin, Layers, Navigation2, X, Map, Satellite } from "lucide-react"
+import { Search, Menu, MapPin, Layers, Navigation2, X, Map, Satellite, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import {
   Command,
   CommandEmpty,
@@ -89,35 +94,26 @@ export default function Home() {
       {/* Top Search Bar */}
       <div className="absolute top-3 left-3 right-3 md:left-1/2 md:-translate-x-1/2 md:right-auto z-30 md:w-full md:max-w-2xl md:px-0">
         <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={searchOpen}
-              className="w-full justify-start bg-white rounded-xl shadow-lg hover:shadow-2xl border-0 h-auto py-2.5 px-3 text-left font-normal"
-            >
-              <Menu 
-                className="h-5 w-5 mr-2 flex-shrink-0 text-gray-700 cursor-pointer" 
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsMenuOpen(true)
-                }}
+          <div className="flex w-full bg-white rounded-xl shadow-lg hover:shadow-2xl border-0 py-2.5 px-3">
+            <Menu 
+              className="h-5 w-5 mr-2 flex-shrink-0 text-gray-700 cursor-pointer" 
+              onClick={() => setIsMenuOpen(true)}
+            />
+            <PopoverTrigger asChild>
+              <button className="flex items-center flex-1 text-left">
+                <Search className="h-5 w-5 text-gray-500 flex-shrink-0 mr-2" />
+                <span className="flex-1 truncate text-sm">
+                  {searchValue || "Search Google Maps"}
+                </span>
+              </button>
+            </PopoverTrigger>
+            {searchValue && (
+              <X
+                className="h-4 w-4 text-gray-500 flex-shrink-0 cursor-pointer hover:text-gray-700"
+                onClick={() => setSearchValue("")}
               />
-              <Search className="h-5 w-5 text-gray-500 flex-shrink-0 mr-2" />
-              <span className="flex-1 truncate text-sm">
-                {searchValue || "Search Google Maps"}
-              </span>
-              {searchValue && (
-                <X
-                  className="h-4 w-4 text-gray-500 flex-shrink-0 cursor-pointer hover:text-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSearchValue("")
-                  }}
-                />
-              )}
-            </Button>
-          </PopoverTrigger>
+            )}
+          </div>
           <PopoverContent className="w-[calc(100vw-1.5rem)] md:w-[600px] p-0" align="start">
             <Command>
               <CommandInput 
@@ -185,13 +181,15 @@ export default function Home() {
       </Sheet>
 
       {/* Map Container */}
-      <div className="relative flex-1 w-full h-full">
+      <div className="relative flex-1 w-full h-full overflow-hidden">
         {/* Enhanced Map with realistic design */}
         <div 
           className="absolute inset-0 bg-[#e5e3df] transition-transform duration-300"
           style={{ 
             transform: `scale(${zoomLevel})`,
-            transformOrigin: 'center center'
+            transformOrigin: 'center center',
+            minWidth: '100%',
+            minHeight: '100%'
           }}
         >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -249,40 +247,101 @@ export default function Home() {
             <rect width="100%" height="100%" fill="url(#buildings)" />
             <rect width="100%" height="100%" fill="url(#parks)" />
             {showTransit && <rect width="100%" height="100%" fill="url(#transit)" />}
+            
+            {/* Street Names */}
+            <text x="20%" y="15%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Market Street</text>
+            <text x="50%" y="30%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Mission Street</text>
+            <text x="75%" y="45%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Valencia Street</text>
+            <text x="30%" y="60%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Folsom Street</text>
+            <text x="60%" y="75%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="14" fontWeight="500" opacity="0.8">Howard Street</text>
+            <text x="15%" y="85%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Golden Gate Park</text>
+            <text x="85%" y="20%" fill={mapType === "satellite" ? "#fff" : "#666"} fontSize="12" fontWeight="500" opacity="0.7">Fisherman's Wharf</text>
           </svg>
 
           {/* All Location Markers */}
           {locations.map((location) => (
-            <button
-              key={location.id}
-              onClick={() => handlePlaceSelect(location)}
-              className={`absolute -translate-x-1/2 -translate-y-full transition-all ${
-                selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
-              }`}
-              style={{
-                top: `${location.coordinates.y}%`,
-                left: `${location.coordinates.x}%`,
-              }}
-              aria-label={`Select ${location.name}`}
-            >
-              <div className="relative">
-                <div className={`relative ${selectedPlace.id === location.id ? 'animate-bounce' : ''}`}>
-                  <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
-                    selectedPlace.id === location.id ? 'bg-red-600' : 'bg-blue-600'
-                  }`} />
-                  <MapPin 
-                    className={`relative h-8 w-8 drop-shadow-2xl ${
+            <HoverCard key={location.id} openDelay={200}>
+              <HoverCardTrigger asChild>
+                <button
+                  onClick={() => handlePlaceSelect(location)}
+                  className={`absolute -translate-x-1/2 -translate-y-full transition-all ${
+                    selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
+                  }`}
+                  style={{
+                    top: `${location.coordinates.y}%`,
+                    left: `${location.coordinates.x}%`,
+                  }}
+                  aria-label={`Select ${location.name}`}
+                >
+                  <div className="relative">
+                    <div className={`relative ${selectedPlace.id === location.id ? 'animate-bounce' : ''}`}>
+                      <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
+                        selectedPlace.id === location.id ? 'bg-red-600' : 'bg-blue-600'
+                      }`} />
+                      <MapPin 
+                        className={`relative h-8 w-8 drop-shadow-2xl ${
+                          selectedPlace.id === location.id 
+                            ? 'text-red-600 fill-red-600' 
+                            : 'text-blue-600 fill-blue-600'
+                        }`}
+                        strokeWidth={1.5}
+                      />
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
+                    </div>
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-black/30 rounded-full blur-sm" />
+                    
+                    {/* Location Label */}
+                    <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap px-2 py-0.5 rounded text-xs font-medium shadow-sm ${
                       selectedPlace.id === location.id 
-                        ? 'text-red-600 fill-red-600' 
-                        : 'text-blue-600 fill-blue-600'
-                    }`}
-                    strokeWidth={1.5}
-                  />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full" />
+                        ? 'bg-red-600 text-white' 
+                        : 'bg-white text-gray-700 border border-gray-200'
+                    }`}>
+                      {location.name}
+                    </div>
+                  </div>
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80" side="top" align="center">
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-semibold text-base mb-1">{location.name}</h4>
+                    <p className="text-sm text-muted-foreground">{location.category} · {location.neighborhood}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium text-sm">{location.rating}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">({location.totalReviews} reviews)</span>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <p className={location.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                      {location.isOpen ? "Open now" : "Closed"}
+                    </p>
+                    {location.timings && location.timings.length > 0 && (
+                      <p className="text-muted-foreground text-xs mt-1">{location.timings[0].hours}</p>
+                    )}
+                  </div>
+                  
+                  {location.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{location.description}</p>
+                  )}
+                  
+                  <Button 
+                    size="sm" 
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handlePlaceSelect(location)
+                    }}
+                  >
+                    View Details
+                  </Button>
                 </div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-black/30 rounded-full blur-sm" />
-              </div>
-            </button>
+              </HoverCardContent>
+            </HoverCard>
           ))}
         </div>
 
