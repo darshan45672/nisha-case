@@ -77,7 +77,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
 
       {/* Lightbox Dialog */}
       <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-screen-lg w-full p-0 gap-0 bg-black/95 border-0">
+        <DialogContent className="max-w-screen-lg w-full h-[90vh] p-0 gap-0 bg-black/95 border-0">
           <DialogTitle className="sr-only">Photo Gallery</DialogTitle>
           <Button
             variant="ghost"
@@ -89,7 +89,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
           </Button>
           
           {selectedImage !== null && (
-            <div className="relative w-full h-[80vh] flex items-center justify-center p-8">
+            <div className="relative w-full h-full flex items-center justify-center p-4 md:p-8">`
               <Carousel
                 opts={{
                   startIndex: selectedImage,
@@ -97,23 +97,23 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
                 }}
                 className="w-full h-full"
               >
-                <CarouselContent>
+                <CarouselContent className="h-full">
                   {photos.map((photo, index) => (
-                    <CarouselItem key={index}>
+                    <CarouselItem key={index} className="h-full">
                       <div className="relative w-full h-full flex items-center justify-center">
-                        <div className="relative w-full h-full">
+                        <div className="relative w-full h-[70vh] md:h-full">
                           <Image
                             src={photo}
                             alt={`Photo ${index + 1}`}
                             fill
                             className="object-contain"
-                            sizes="100vw"
+                            sizes="(max-width: 768px) 100vw, 90vw"
                             priority={index === selectedImage}
                           />
                         </div>
                       </div>
                     </CarouselItem>
-                  ))}
+                  ))}`
                 </CarouselContent>
                 <CarouselPrevious className="left-4 text-white border-white/50 hover:bg-white/20 hover:text-white" />
                 <CarouselNext className="right-4 text-white border-white/50 hover:bg-white/20 hover:text-white" />

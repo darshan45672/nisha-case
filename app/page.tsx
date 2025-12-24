@@ -189,6 +189,7 @@ export default function Home() {
     
     setRoutePath(path)
     setShowDirections(true)
+    setIsPanelOpen(false) // Close panel to view route
   }
 
   // Drag handlers for map panning
@@ -483,7 +484,10 @@ export default function Home() {
           {locations.map((location) => {
             const markerButton = (
               <button
-                onClick={() => handlePlaceSelect(location)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handlePlaceSelect(location)
+                }}
                 className={`absolute -translate-x-1/2 -translate-y-full transition-all touch-manipulation ${
                   selectedPlace.id === location.id ? 'z-20 scale-110' : 'z-10 hover:scale-105'
                 }`}
@@ -492,7 +496,7 @@ export default function Home() {
                   left: `${location.coordinates.x}%`,
                 }}
                 aria-label={`Select ${location.name}`}
-              >
+              >`
                 <div className="relative">
                   <div className="relative">
                     <div className={`absolute inset-0 rounded-full blur-xl opacity-30 scale-150 ${
