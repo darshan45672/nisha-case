@@ -4,6 +4,15 @@ export interface TimingDay {
   isToday?: boolean
 }
 
+export interface Review {
+  id: string
+  author: string
+  rating: number
+  date: string
+  text: string
+  helpful: number
+}
+
 export interface PlaceData {
   id: string
   name: string
@@ -20,6 +29,7 @@ export interface PlaceData {
   timings: TimingDay[]
   photos: string[]
   description?: string
+  reviews?: Review[]
   coordinates: {
     x: number // percentage from left
     y: number // percentage from top
